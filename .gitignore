@@ -1,0 +1,47 @@
+# Backup files (don't commit actual database backups)
+db_backups/*.dump
+*.dump
+
+# Environment files with connection strings
+.env
+.env.local
+*.config
+*_config
+.neon_backup_config
+
+# Logs
+*.log
+*.output
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
