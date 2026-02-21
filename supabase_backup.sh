@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Neon PostgreSQL Backup Script
+# Supabase PostgreSQL Backup Script
 # Usage:
-#   Interactive: ./neon_backup.sh
-#   Direct:      ./neon_backup.sh "postgresql://user:pass@host/dbname"
+#   Interactive: ./supabase_backup.sh
+#   Direct:      ./supabase_backup.sh "postgresql://postgres.[your-password]@aws-0-eu-central-1.pooler.supabase.com:5432/postgres"
 
 # Color output
 RED='\033[0;31m'
@@ -11,7 +11,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}=== Neon PostgreSQL Backup ===${NC}\n"
+echo -e "${GREEN}=== Supabase PostgreSQL Backup ===${NC}\n"
 
 # Use PostgreSQL 17 explicitly
 PG_DUMP="/opt/homebrew/opt/postgresql@17/bin/pg_dump"
@@ -34,11 +34,9 @@ if [ -n "$1" ]; then
     echo -e "${GREEN}Using connection string from argument${NC}\n"
 else
     # Prompt for source connection string
-    echo -e "${YELLOW}Enter SOURCE Neon connection string (paste as single line):${NC}"
-    echo "(Format: postgresql://user:password@host/dbname)"
-    echo ""
-    echo -e "${YELLOW}Tip: If pasting causes issues, use:${NC}"
-    echo "  ./neon_backup.sh \"postgresql://user:pass@host/dbname\""
+    echo -e "${YELLOW}Enter SOURCE Supabase connection string (paste as single line):${NC}"
+    echo -e "${YELLOW}Note: Use the Session mode connection string (port 5432) for pg_dump${NC}"
+    echo "(Format: postgresql://postgres.[your-password]@aws-0-eu-central-1.pooler.supabase.com:5432/postgres)"
     echo ""
     read -r SOURCE_DB
 fi
@@ -49,14 +47,13 @@ if [ -z "$SOURCE_DB" ]; then
 fi
 
 # Validate connection string format
-if [[ ! "$SOURCE_DB" =~ ^postgresql:// ]]; then
+if [[ ! "$SOURCE_DB" =~ ^postgresql:// ]] && [[ ! "$SOURCE_DB" =~ ^postgres:// ]]; then
     echo -e "${RED}Error: Invalid connection string format${NC}"
-    echo "Must start with: postgresql://"
+    echo "Must start with: postgresql:// or postgres://"
     exit 1
 fi
 
 # Extract database name from connection string
-# Format: postgresql://user:password@host/dbname or postgresql://user:password@host/dbname?params
 DB_NAME=$(echo "$SOURCE_DB" | sed -E 's|.*://[^/]*/([^?]+).*|\1|')
 
 # Validate database name extraction
@@ -77,7 +74,7 @@ mkdir -p "$BACKUP_DIR"
 
 # Generate backup filename with database name and timestamp
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/${DB_NAME}_${TIMESTAMP}.dump"
+BACKUP_FILE="$BACKUP_DIR/supabase_${DB_NAME}_${TIMESTAMP}.dump"
 
 echo -e "\n${GREEN}Starting backup...${NC}"
 echo "Output file: $BACKUP_FILE"
@@ -90,7 +87,7 @@ if [ $? -eq 0 ]; then
     echo -e "\n${GREEN}✓ Backup completed successfully!${NC}"
     echo -e "File: $BACKUP_FILE ($FILE_SIZE)"
     echo -e "\n${YELLOW}To restore, run:${NC}"
-    echo -e "  pg_restore -v --no-owner --no-acl -d \"your-target-connection-string\" $BACKUP_FILE"
+    echo -e "  ./supabase_restore.sh $BACKUP_FILE"
 else
     echo -e "\n${RED}✗ Backup failed!${NC}"
     # Clean up the empty file
